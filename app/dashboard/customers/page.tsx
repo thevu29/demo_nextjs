@@ -5,19 +5,13 @@ import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
 import { fetchFilteredCustomers } from '@/app/lib/data';
 import { Metadata } from 'next';
- 
+
 export const metadata: Metadata = {
-  title: 'Customers',
+    title: 'Customers',
 };
 
-const Page = async ({
-    searchParams,
-}: {
-    searchParams?: {
-        query?: string;
-    }
-}) => {
-    const query = searchParams?.query || '';
+const Page = async ({ searchParams }: { searchParams: { query?: string } }) => {
+    const query = searchParams.query || '';
     const customers = await fetchFilteredCustomers(query);
 
     return (
@@ -26,11 +20,11 @@ const Page = async ({
                 Customers
             </h1>
             <Search placeholder="Search customers..." />
-            <Suspense key={query} fallback={<InvoicesTableSkeleton />}>
+            <Suspense fallback={<InvoicesTableSkeleton />}>
                 <Table customers={customers} />
             </Suspense>
         </div>
     );
-}
+};
 
 export default Page;
