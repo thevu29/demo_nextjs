@@ -1,1 +1,1 @@
-## Learning Next.js with basic project
+# Learning Next.js with basic project
