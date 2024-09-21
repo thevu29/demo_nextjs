@@ -1,11 +1,11 @@
 'use server';
 
-import db from '@/app/lib/db';
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { AuthError } from 'next-auth';
 import { signIn } from '@/auth';
+import { sql } from '@vercel/postgres';
 
 const FormSchema = z.object({
     id: z.string(),
@@ -51,14 +51,10 @@ export const createInvoice = async (prevState: State, formData: FormData) => {
     const date = new Date().toISOString();
 
     try {
-        await db.invoice.create({
-            data: {
-                amount: amountInCents,
-                date,
-                status,
-                customerId
-            }
-        });
+        await sql`
+            INSERT INTO invoices (customer_id, amount, status, date)
+            VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
+        `;
     } catch (error) {
         console.log(error);
         return {
@@ -90,14 +86,11 @@ export const updateInvoice = async (id: string, prevState: State, formData: Form
     const amountInCents = amount * 100;
 
     try {
-        await db.invoice.update({
-            where: { id },
-            data: {
-                amount: amountInCents,
-                status,
-                customerId
-            }
-        });
+        await sql`
+            UPDATE invoices
+            SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+            WHERE id = ${id}
+        `;
     } catch (error) {
         console.log(error);
         return {
@@ -111,7 +104,7 @@ export const updateInvoice = async (id: string, prevState: State, formData: Form
 
 export const deleteInvoice = async (id: string) => {
     try {
-        await db.invoice.delete({ where: { id } });
+        await sql`DELETE FROM invoices WHERE id = ${id}`;
         revalidatePath('/dashboard/invoices');
     } catch (error) {
         console.log(error);
